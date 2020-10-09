@@ -5,6 +5,7 @@ Works on Linux because of `local-command.sh`, sorry.
 
 First run `mvn install` in `jfaas-proxy` and `mvn install` in `jfaas-runner` and `mvn package` in `jfaas-local-example`. Make sure that `local-command.sh` is executable.
 
+In the directory `jfaas-local-example` run the command:
 ```
 java -cp target/jfaas-local-example-1.jar:../jfaas-proxy/target/jfaas-proxy-1.jar -Djfaas.proxy.command=./local-command.sh -Djfaas.proxy.client.jar=target/jfaas-local-example-1.jar network.golem.jfaas.example.local.ObjectTest
 ```
