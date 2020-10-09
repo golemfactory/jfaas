@@ -1,0 +1,1 @@
+java -cp target/jfaas-local-example-1.jar:../jfaas-proxy/target/jfaas-proxy-1.jar -Djfaas.proxy.command=./local-command.sh -Djfaas.proxy.client.jar=target/jfaas-local-example-1.jar network.golem.jfaas.example.local.ObjectTest
