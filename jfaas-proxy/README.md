@@ -32,3 +32,7 @@ At the moment an execution of the external command is synchronuous - when the co
 ## Beans
 
 A target bean must be POJO. All method parameters and return values must be Serializable. A target bean instance is created with an empty constructor on the remote side.
+
+## Output
+
+The standard output and error from the external command execution is appended to the standard output and error of the calling jvm.
