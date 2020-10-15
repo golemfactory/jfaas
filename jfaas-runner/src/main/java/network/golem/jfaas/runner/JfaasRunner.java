@@ -1,23 +1,36 @@
 package network.golem.jfaas.runner;
 
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
+import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class JfaasRunner {
-    public static void main(String[] args) throws Throwable {
+    public static void main(String[] args) throws IOException {
         if (args.length != 1) {
             throw new RunnerException("give me one argument, the invocation data file");
         }
         invoke(Paths.get(args[0]));
     }
 
-    public static void invoke(Path invocationFilePath) throws Throwable {
+    public static void invoke(Path invocationFilePath) throws IOException {
+        try {
+            invokeInt(invocationFilePath);
+        } catch (Throwable throwable) {
+            RunnerExecutionException runnerExecutionException = new RunnerExecutionException(throwable);
+            Path resultFilePath = Paths.get(invocationFilePath.getParent().toString(), invocationFilePath.getFileName().toString() + ".return");
+            try (OutputStream fileOutputStream = Files.newOutputStream(resultFilePath)) {
+                try (ObjectOutputStream out = new ObjectOutputStream(fileOutputStream)) {
+                    out.writeObject(resultFilePath);
+                }
+            }
+
+        }
+    }
+
+    public static void invokeInt(Path invocationFilePath) throws Throwable {
         if (!Files.isRegularFile(invocationFilePath))
             throw new RunnerException("input file does not exist: "+invocationFilePath.toString());
         Object invocationObject;
@@ -54,10 +67,13 @@ public class JfaasRunner {
             throw new RunnerException("the method "+methodName+" not found in the interface "+interfaceClassName);
         }
 
-        Object result = method.invoke(instance, args);
+        Object result;
+        try {
+            result = method.invoke(instance, args);
+        } catch (InvocationTargetException ite) {
+            result = ite.getCause();
+        }
 
-        if (method.getReturnType().equals(Void.class))
-            return;
         Path resultFilePath = Paths.get(invocationFilePath.getParent().toString(), invocationFilePath.getFileName().toString() + ".return");
         try (OutputStream fileOutputStream = Files.newOutputStream(resultFilePath)) {
             try (ObjectOutputStream out = new ObjectOutputStream(fileOutputStream)) {

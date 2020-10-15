@@ -1,2 +1,2 @@
 #!/bin/sh
-exit 0;
+cp null.invocation.return "$2.return"

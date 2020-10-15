@@ -71,9 +71,6 @@ public class JfaasProxy implements InvocationHandler {
             throw new CommandException("the command executed in the separate process returned with non-zero code: "+commandStatus);
         }
 
-        if (method.getReturnType().equals(Void.TYPE)) {
-            return null;
-        }
         String resultFileName = invocationId +".invocation.return";
         Path resultFilePath = Paths.get(directory, resultFileName);
         if (!Files.isRegularFile(resultFilePath)) {
@@ -82,6 +79,8 @@ public class JfaasProxy implements InvocationHandler {
         try (InputStream fileInputStream = Files.newInputStream(resultFilePath)) {
             try (ObjectInputStream in = new ObjectInputStream(fileInputStream)) {
                 Object result = in.readObject();
+                if (result instanceof Throwable)
+                    throw (Throwable) result;
                 return result;
             }
         }

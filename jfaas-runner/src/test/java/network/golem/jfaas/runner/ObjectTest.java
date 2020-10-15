@@ -34,4 +34,46 @@ public class ObjectTest {
         Path returnFilePath = Paths.get(tempDir, invocationId + ".invocation.return");
         assertTrue(Files.isRegularFile(returnFilePath));
     }
+
+    @Test
+    public void objectTestException() throws Throwable {
+        String invocationId = Long.toString(Math.abs(new Random().nextLong()));
+        String tempDir = System.getProperty("java.io.tmpdir");
+
+        ObjectTestArgument argument = new ObjectTestArgument("object", "test");
+        Object[] invocation = {"network.golem.jfaas.runner.ObjectTestBeanLocal", "network.golem.jfaas.runner.ObjectTestBean", "convertFail", new Object[]{argument}};
+
+        Path invocationFilePath = Paths.get(tempDir, invocationId + ".invocation");
+        try (OutputStream fileOutputStream = Files.newOutputStream(invocationFilePath)) {
+            try (ObjectOutputStream out = new ObjectOutputStream(fileOutputStream)) {
+                out.writeObject(invocation);
+            }
+        }
+
+        JfaasRunner.invoke(invocationFilePath);
+
+        Path returnFilePath = Paths.get(tempDir, invocationId + ".invocation.return");
+        assertTrue(Files.isRegularFile(returnFilePath));
+    }
+
+    @Test
+    public void objectTestNull() throws Throwable {
+        String invocationId = Long.toString(Math.abs(new Random().nextLong()));
+        String tempDir = System.getProperty("java.io.tmpdir");
+
+        ObjectTestArgument argument = new ObjectTestArgument("object", "test");
+        Object[] invocation = {"network.golem.jfaas.runner.ObjectTestBeanLocal", "network.golem.jfaas.runner.ObjectTestBean", "convertToNull", new Object[]{argument}};
+
+        Path invocationFilePath = Paths.get(tempDir, invocationId + ".invocation");
+        try (OutputStream fileOutputStream = Files.newOutputStream(invocationFilePath)) {
+            try (ObjectOutputStream out = new ObjectOutputStream(fileOutputStream)) {
+                out.writeObject(invocation);
+            }
+        }
+
+        JfaasRunner.invoke(invocationFilePath);
+
+        Path returnFilePath = Paths.get(tempDir, invocationId + ".invocation.return");
+        assertTrue(Files.isRegularFile(returnFilePath));
+    }
 }
