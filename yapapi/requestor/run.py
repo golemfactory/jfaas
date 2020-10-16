@@ -62,6 +62,7 @@ if __name__ == "__main__":
     ]
     print(tasks)
 
+    enable_default_logger(log_file="run.log")
     loop = asyncio.get_event_loop()
     sys.stderr.write(
         f"yapapi version: {utils.TEXT_COLOR_YELLOW}{yapapi.__version__}{utils.TEXT_COLOR_DEFAULT}\n"
