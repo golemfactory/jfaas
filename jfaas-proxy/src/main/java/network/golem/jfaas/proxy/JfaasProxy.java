@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Random;
+import java.util.concurrent.Future;
 
 public class JfaasProxy implements InvocationHandler {
     public static final String JFAAS_PROXY_WORKING_DIR_PROPERTY = "jfaas.proxy.working.dir";
@@ -29,13 +30,42 @@ public class JfaasProxy implements InvocationHandler {
     }
 
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        if (Future.class.isAssignableFrom(method.getReturnType())) {
+            FutureImpl future = new FutureImpl();
+            new Thread(() -> {
+                try {
+                    Object result = invokeInt(proxy, method, args);
+                    synchronized (future.mutex) {
+                        if (result instanceof Throwable)
+                            future.setException((Throwable) result);
+                        else
+                            future.setValue(((Future) result).get());
+                        future.mutex.notifyAll();
+                    }
+                } catch (Throwable throwable) {
+                    synchronized (future.mutex) {
+                        future.setException(throwable);
+                        future.mutex.notifyAll();
+                    }
+                }
+            }).start();
+            return future;
+        } else {
+            Object result = invokeInt(proxy, method, args);
+            if (result instanceof Throwable)
+                throw (Throwable) result;
+            return result;
+        }
+    }
+
+    private Object invokeInt(Object proxy, Method method, Object[] args) throws Throwable {
         String invocationId = Long.toString(Math.abs(new Random().nextLong()));
         String directory = System.getProperty(JFAAS_PROXY_WORKING_DIR_PROPERTY) != null ?
                 System.getProperty(JFAAS_PROXY_WORKING_DIR_PROPERTY) : System.getProperty("java.io.tmpdir");
         String command = System.getProperty(JFAAS_PROXY_EXTERNAL_COMMAND_PROPERTY);
         String clientJar = System.getProperty(JFAAS_PROXY_CLIENT_JAR_PROPERTY);
 
-        Object[] invocation = {interfaceClass.getName(), implClass.getName(), method.getName(), args};
+        Object[] invocation = {null, implClass.getName(), method.getName(), args};
         String invocationFileName = invocationId +".invocation";
         Path invocationFilePath = Paths.get(directory, invocationFileName);
         try (OutputStream fileOutputStream = Files.newOutputStream(invocationFilePath)) {
@@ -79,8 +109,6 @@ public class JfaasProxy implements InvocationHandler {
         try (InputStream fileInputStream = Files.newInputStream(resultFilePath)) {
             try (ObjectInputStream in = new ObjectInputStream(fileInputStream)) {
                 Object result = in.readObject();
-                if (result instanceof Throwable)
-                    throw (Throwable) result;
                 return result;
             }
         }
