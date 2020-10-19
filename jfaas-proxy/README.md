@@ -49,4 +49,4 @@ The standard output and error from the external command execution is appended to
 2. The target object is created with default empty constructor.
 3. Only public methods are eligible for delegate calls.
 4. The method is distinguished by a name. Make sure your delegated call does not use overloaded method.
-5. Make sure that all required classes are contained in the client jar.
+5. Make sure that all required classes are contained in the client jar. `jfaas-runner.jar` will be added to the class path on a remote side.
