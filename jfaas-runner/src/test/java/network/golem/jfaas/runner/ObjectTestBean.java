@@ -15,4 +15,9 @@ public class ObjectTestBean implements ObjectTestBeanLocal {
     public ObjectTestReturn convertToNull(ObjectTestArgument argument) {
         return null;
     }
+    @Override
+    public void nullValidate(Object argument) {
+        if (argument == null)
+            throw new RunnerException("object is null");
+    }
 }

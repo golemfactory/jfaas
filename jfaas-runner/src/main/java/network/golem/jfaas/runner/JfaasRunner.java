@@ -31,7 +31,7 @@ public class JfaasRunner {
     }
 
     public static void invokeInt(Path invocationFilePath) throws Throwable {
-        if (!Files.isRegularFile(invocationFilePath))
+        if (!(Files.exists(invocationFilePath) && Files.isRegularFile(invocationFilePath)))
             throw new RunnerException("input file does not exist: "+invocationFilePath.toString());
         Object invocationObject;
         try (InputStream fileInputStream = Files.newInputStream(invocationFilePath)) {
@@ -42,34 +42,35 @@ public class JfaasRunner {
 
         if (!(invocationObject instanceof Object[])) throw new RunnerException("input data not an array");
         Object[] invocation = (Object[]) invocationObject;
-        if (invocation.length !=4 || !(invocation[0] instanceof String) ||
+        if (invocation.length !=4 ||
                 !(invocation[1] instanceof String) || !(invocation[2] instanceof String) ||
                 !(invocation[3] == null || invocation[3] instanceof Object[])) {
             throw new RunnerException("improper invocation data, should be: intfClassName (String), implClassName (String), methodName (String), args (Object[])");
         }
-        String interfaceClassName = (String) invocation[0];
-        String implClassName = (String) invocation[1];
+        Object target = invocation[0];
+        String targetClassName = (String) invocation[1];
         String methodName = (String) invocation[2];
         Object[] args = (Object[]) invocation[3];
 
-        Class<?> interfaceClass = Class.forName(interfaceClassName);
-        Class<?> implClass = Class.forName(implClassName);
+        Class<?> targetClass = Class.forName(targetClassName);
 
-        Object instance = implClass.newInstance();  //not so pretty ...
         Method method = null;
-        for (Method interfaceClassMethod : interfaceClass.getMethods()) {
+        for (Method interfaceClassMethod : targetClass.getMethods()) {
             if (interfaceClassMethod.getName().equals(methodName)) {
                 method = interfaceClassMethod;
                 break;
             }
         }
         if (method == null) {
-            throw new RunnerException("the method "+methodName+" not found in the interface "+interfaceClassName);
+            throw new RunnerException("the method "+methodName+" not found in the class "+targetClassName);
         }
 
+        if (target == null) {
+            target = targetClass.newInstance();  //not so pretty ...
+	}
         Object result;
         try {
-            result = method.invoke(instance, args);
+            result = method.invoke(target, args);
         } catch (InvocationTargetException ite) {
             result = ite.getCause();
         }
