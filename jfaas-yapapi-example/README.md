@@ -5,10 +5,12 @@ Works on Linux because of `yapapi-command.sh`, sorry.
 
 First run `mvn install` in `jfaas-proxy` and `mvn install` in `jfaas-runner` and `mvn package` in `jfaas-yapapi-example`. Make sure that `yapapi-command.sh` is executable.
 
-Finally we need `jfaas-runner` at the hand. There is one reference to it in `run.py`.
+We need `jfaas-runner` also at the hand. There is one reference to it in `run.py`.
 ```
 cp ../jfaas-runner/target/jfaas-runner-1.jar .
 ```
+
+Keep in mind that python is in use because of `yapapi`. For more information on `yapapi` and how to set Yagna's requestor, see [this](https://handbook.golem.network/requestor-tutorials/flash-tutorial-of-requestor-development). In particular you need to create `venv`, set `YAGNA_APPKEY` and initialize payments.
 
 In the directory `jfaas-yapapi-example` run the command:
 ```
