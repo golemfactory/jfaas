@@ -1,0 +1,1 @@
+java -cp target/jfaas-yapapi-example-1.jar:../jfaas-proxy/target/jfaas-proxy-1.jar -Djfaas.proxy.command=./yapapi-command.sh -Djfaas.proxy.client.jar=target/jfaas-yapapi-example-1.jar network.golem.jfaas.example.yapapi.ObjectTest
