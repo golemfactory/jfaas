@@ -45,7 +45,7 @@ async def main(subnet_tag, tasks):
 
     async with Engine(
         package=package,
-        max_workers=1,
+        max_workers=4,
         budget=10.0,
         timeout=init_overhead + timedelta(minutes=len(tasks) * 3),
         subnet_tag=subnet_tag,
