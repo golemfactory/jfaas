@@ -25,6 +25,7 @@ public class ObjectTest {
         for (Future<Double> future : futures) {
             try {
                 double steps = future.get();
+                System.out.println("Got task result: " + steps);
                 averageSteps += steps/tasks;
             } catch (InterruptedException e) {
                 e.printStackTrace();
